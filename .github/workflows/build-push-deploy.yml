@@ -9,6 +9,8 @@ jobs:
   build-push-deploy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+        name: checkout code
       - uses: score-spec/setup-score@v2
         name: setup score
         with:
