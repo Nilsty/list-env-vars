@@ -27,7 +27,7 @@ jobs:
       - name: Deploy using Score
         run: |
           score-humanitec delta \
-            --app list-env-var-app \
+            --app list-env-vars-app \
             --org ${{ secrets.HUMANITEC_ORG }} \
             --token "${{ secrets.HUMANITEC_TOKEN }}" \
             --env "development" \
