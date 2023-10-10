@@ -9,7 +9,7 @@ service:
       targetPort: 8000
 
 containers:
-  frontend-service:
+  list-env-vars:
     image: "" # set by pipeline
     variables:
       TEST_ENV_VAR: my test value
