@@ -1,0 +1,34 @@
+apiVersion: score.dev/v1b1
+metadata:
+  name: list-env-vars
+
+service:
+  ports:
+    http:
+      port: 8000
+      targetPort: 8000
+
+containers:
+  frontend-service:
+    image: "" # set by pipeline
+    variables:
+      TEST_ENV_VAR: my test value
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 8000
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 8000
+    resources:
+      limits:
+        cpu: "0.025"
+        memory: "64Mi"
+      requests:
+        cpu: "0.025"
+        memory: "64Mi"
+
+resources:
+  dns:
+    type: dns

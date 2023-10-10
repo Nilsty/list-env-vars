@@ -1,0 +1,34 @@
+name: Build Push and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: score-spec/setup-score@v2
+        name: setup score
+        with:
+          file: score-humanitec
+          version: '0.6.0'
+      - name: Build and Push to Humanitec
+        uses: humanitec/build-push-to-humanitec@v1
+        id: push
+        with:
+          humanitec-token: ${{ secrets.HUMANITEC_TOKEN }}
+          organization: ${{ secrets.HUMANITEC_ORG }}
+          tag: ${{ github.run_number }}
+          additional-docker-arguments: --build-arg VERSION=${{ github.run_number }}
+      - name: Deploy using Score
+        run: |
+          score-humanitec delta \
+            --app list-env-var-app \
+            --org ${{ secrets.HUMANITEC_ORG }} \
+            --token "${{ secrets.HUMANITEC_TOKEN }}" \
+            --env "development" \
+            --property "containers.list-env-vars.image=${{ steps.push.outputs.image }}" \
+            --deploy \
+            --retry
