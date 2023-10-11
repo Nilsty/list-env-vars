@@ -32,3 +32,9 @@ containers:
 resources:
   dns:
     type: dns
+  route:
+    type: route
+    params:
+      host: ${resources.dns.host}
+      path: /
+      port: 8000
