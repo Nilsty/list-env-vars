@@ -10,9 +10,6 @@ service:
 
 containers:
   list-env-vars:
-    deploy:
-      when: deploy
-      success: available
     image: "" # set by pipeline
     variables:
       TEST_ENV_VAR: my test value
