@@ -1,0 +1,6 @@
+apiVersion: humanitec.org/v1b1
+
+spec:
+  deploy:
+    when: deploy
+    success: available
