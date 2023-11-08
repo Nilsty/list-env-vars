@@ -1,4 +1,4 @@
-name: Build Push and Deploy
+name: Build, Push and Trigger Humanitec Pipeline
 
 on:
   push:
@@ -24,11 +24,14 @@ jobs:
           organization: ${{ secrets.HUMANITEC_ORG }}
           tag: ${{ github.run_number }}
           additional-docker-arguments: --build-arg VERSION=${{ github.run_number }}
-      - name: Deploy using Score
+      - name: Create Delta using Score
         run: |
-          score-humanitec delta \
+          echo "DELTA=$(score-humanitec delta \
             --app list-env-vars-app \
             --org ${{ secrets.HUMANITEC_ORG }} \
             --token "${{ secrets.HUMANITEC_TOKEN }}" \
             --env "development" \
-            --property "containers.list-env-vars.image=${{ steps.push.outputs.image }}"
+            --property "containers.list-env-vars.image=${{ steps.push.outputs.image }}" \
+            | jq -r .id)" >> $GITHUB_ENV
+      - name: print delta
+        run: echo $DELTA
