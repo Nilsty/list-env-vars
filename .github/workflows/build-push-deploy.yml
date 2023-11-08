@@ -31,6 +31,4 @@ jobs:
             --org ${{ secrets.HUMANITEC_ORG }} \
             --token "${{ secrets.HUMANITEC_TOKEN }}" \
             --env "development" \
-            --property "containers.list-env-vars.image=${{ steps.push.outputs.image }}" \
-            --deploy \
-            --retry
+            --property "containers.list-env-vars.image=${{ steps.push.outputs.image }}"
