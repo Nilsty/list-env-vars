@@ -1,0 +1,57 @@
+name: Promote Build
+on:
+  pipeline_call:
+    inputs:
+      delta:
+        description: delta id from score
+        type: string
+        required: true
+      build:
+        description: build number
+        type: string
+        required: true
+      commit:
+        description: commit message
+        type: string
+        required: true
+jobs:
+  promote-build:
+    steps:
+      - name: Deploy delta to dev
+        id: dev-deploy
+        uses: actions/humanitec/deploy
+        with:
+          to: development
+          delta: ${{ inputs.delta }}
+          message: BUILD ${{ inputs.build }} COMMIT MESSAGE ${{ inputs.commit }}
+      
+      - name: Run tests on dev
+        id: dev-tests
+        if: ${{ steps.dev-deploy.status == 'succeeded' }}
+        uses: actions/humanitec/github-workflow
+        with:
+          repo: Nilsty/robot-test-action
+          ref: main
+          workflow: run-robot-test.yml
+          access-token: ${{ app.values.GITHUB_TOKEN }}
+          inputs:
+            url: "https://humanitec.com/"
+            text: "Abstract"
+      
+      - name: Prepare staging deployment
+        id: stg-prep
+        if: ${{ steps.dev-tests.status == 'success' }}
+        uses: actions/humanitec/clone
+        with:
+          from: development
+          to: staging
+          deployment: ${{ steps.dev-deploy.outputs.deployment }}
+
+      - name: Deploy to staging
+        id: stg-deploy
+        if: ${{ steps.dev-tests.status == 'success' }}
+        uses: actions/humanitec/deploy
+        with:
+          to: staging
+          deploymentset: ${{ steps.stg-prep.outputs.deploymentset }}
+          message: BUILD ${{ inputs.build }} COMMIT MESSAGE ${{ inputs.commit }}
