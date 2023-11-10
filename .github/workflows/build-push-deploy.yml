@@ -35,6 +35,13 @@ jobs:
             | jq -r .id)" >> $GITHUB_ENV
       - name: print delta and build number
         run: echo $DELTA ${{ github.run_number }} 
-      - name: Logging event
+      - name: echo commit msg
         run: |
           echo ${{ github.event.head_commit.message }}
+      - name: trigger Humanitec pipeline
+        run: |
+          curl --location 'https://api.humanitec.io/orgs/${{ secrets.HUMANITEC_ORG }}/apps/list-env-vars-app/pipelines/cdcd28d0-5c3d-4e4a-bfed-cf85ef25753f/runs' \
+          --header 'Authorization: ${{ secrets.HUMANITEC_TOKEN }}' \
+          --header 'Content-Type: application/json' \
+          --data '{ "inputs": {"delta":"${DELTA}","build":"${{ github.run_number }}","commit":"${{ github.event.head_commit.message }}"}}'
+      
