@@ -17,12 +17,19 @@ on:
 jobs:
   promote-build:
     steps:
-      - name: Deploy delta to dev
+      - name: Deploy set to dev
+        id: dev-prep
+        uses: actions/humanitec/apply
+        with:
+          to: development
+          delta: ${{ inputs.delta }}
+
+      - name: Deploy set to dev
         id: dev-deploy
         uses: actions/humanitec/deploy
         with:
           to: development
-          delta: ${{ inputs.delta }}
+          deploymentset: ${{ steps.dev-prep.outputs.deploymentset }}
           message: BUILD ${{ inputs.build }} COMMIT MESSAGE ${{ inputs.commit }}
       
       - name: Run tests on dev
