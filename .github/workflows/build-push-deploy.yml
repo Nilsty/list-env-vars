@@ -37,4 +37,4 @@ jobs:
         run: echo $DELTA ${{ github.run_number }} 
       - name: Logging event
         run: |
-          echo "${{toJSON(github.event)}}"
+          echo ${{ github.event.head_commit.message }}
