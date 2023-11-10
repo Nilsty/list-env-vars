@@ -33,5 +33,8 @@ jobs:
             --env "development" \
             --property "containers.list-env-vars.image=${{ steps.push.outputs.image }}" \
             | jq -r .id)" >> $GITHUB_ENV
-      - name: print delta
-        run: echo $DELTA
+      - name: print delta and build number
+        run: echo $DELTA ${{ github.run_number }} 
+      - name: Logging event
+        run: |
+          echo "${{toJSON(github.event)}}"
