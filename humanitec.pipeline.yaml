@@ -47,7 +47,7 @@ jobs:
       
       - name: Prepare staging deployment
         id: stg-prep
-        if: ${{ steps.dev-tests.status == 'success' }}
+        if: ${{ steps.dev-tests.status == 'succeeded' }}
         uses: actions/humanitec/clone
         with:
           from: development
@@ -56,7 +56,7 @@ jobs:
 
       - name: Deploy to staging
         id: stg-deploy
-        if: ${{ steps.dev-tests.status == 'success' }}
+        if: ${{ steps.dev-tests.status == 'succeeded' }}
         uses: actions/humanitec/deploy
         with:
           to: staging
