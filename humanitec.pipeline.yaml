@@ -17,14 +17,14 @@ on:
 jobs:
   promote-build:
     steps:
-      - name: Deploy set to dev
+      - name: Prepare development deployment
         id: dev-prep
         uses: actions/humanitec/apply
         with:
           to: development
           delta: ${{ inputs.delta }}
 
-      - name: Deploy set to dev
+      - name: Deploy to development
         id: dev-deploy
         uses: actions/humanitec/deploy
         with:
@@ -32,7 +32,7 @@ jobs:
           deploymentset: ${{ steps.dev-prep.outputs.deploymentset }}
           message: BUILD ${{ inputs.build }} COMMIT MESSAGE ${{ inputs.commit }}
       
-      - name: Run tests on dev
+      - name: Run tests against development
         id: dev-tests
         if: ${{ steps.dev-deploy.status == 'succeeded' }}
         uses: actions/humanitec/github-workflow
