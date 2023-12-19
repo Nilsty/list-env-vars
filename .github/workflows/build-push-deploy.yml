@@ -40,7 +40,7 @@ jobs:
           echo ${{ github.event.head_commit.message }}
       - name: trigger Humanitec pipeline
         run: |
-          curl --location 'https://api.humanitec.io/orgs/${{ secrets.HUMANITEC_ORG }}/apps/list-env-vars-app/pipelines/cdcd28d0-5c3d-4e4a-bfed-cf85ef25753f/runs' \
+          curl --location 'https://api.humanitec.io/orgs/${{ secrets.HUMANITEC_ORG }}/apps/list-env-vars-app/pipelines/${{ vars.HUM_PIPELINE_ID }}/runs' \
           --header 'Authorization: Bearer ${{ secrets.HUMANITEC_TOKEN }}' \
           --header 'Content-Type: application/json' \
           --data '{

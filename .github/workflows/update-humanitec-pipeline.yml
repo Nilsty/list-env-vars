@@ -1,0 +1,22 @@
+name: Update Humanitec pipeline definition
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'humanitec.pipeline.yaml'
+
+jobs:
+  update-hum-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        name: checkout code
+      - name: update Humanitec pipeline
+        run: |
+          PIPELINE_YML=$(cat humanitec.pipeline.yaml)
+          curl --location --request PATCH 'https://api.humanitec.io/orgs/${{ secrets.HUMANITEC_ORG }}/apps/list-env-vars-app/pipelines/${{ vars.HUM_PIPELINE_ID }}' \
+          --header 'Authorization: Bearer ${{ secrets.HUMANITEC_TOKEN }}' \
+          --header 'Content-Type: application/x-yaml' \
+          --data '${PIPELINE_YML}'

@@ -30,7 +30,7 @@ jobs:
         with:
           to: development
           deploymentset: ${{ steps.dev-prep.outputs.deploymentset }}
-          message: BUILD ${{ inputs.build }} COMMIT MESSAGE ${{ inputs.commit }}
+          message: BUILD ${{ inputs.build }} - ${{ inputs.commit }}
       
       - name: Run tests against development
         id: dev-tests
@@ -44,7 +44,19 @@ jobs:
           inputs:
             url: "https://humanitec.com/"
             text: "Abstract"
-      
+        continue-on-error: true
+
+      - name: Notify Development test failure
+        id: dev-tests-notify
+        if: ${{ steps.dev-tests.status == 'failed' }}
+        uses: actions/humanitec/http
+        with:
+          method: POST
+          url: ${{ app.values.SLACK_WEBHOOK_URL }}
+          headers:
+            "Content-type": "application/json"
+          data: { "text":":alert: Development tests failed after deployment of BUILD ${{ inputs.build }} - ${{ inputs.commit }}" }
+
       - name: Prepare staging deployment
         id: stg-prep
         if: ${{ steps.dev-tests.status == 'succeeded' }}
@@ -61,4 +73,91 @@ jobs:
         with:
           to: staging
           deploymentset: ${{ steps.stg-prep.outputs.deploymentset }}
-          message: BUILD ${{ inputs.build }} COMMIT MESSAGE ${{ inputs.commit }}
+          message: BUILD ${{ inputs.build }} - ${{ inputs.commit }}
+
+      - name: Run tests against staging
+        id: stg-tests
+        if: ${{ steps.stg-deploy.status == 'succeeded' }}
+        uses: actions/humanitec/github-workflow
+        with:
+          repo: Nilsty/robot-test-action
+          ref: main
+          workflow: run-robot-test.yml
+          access-token: ${{ app.values.GITHUB_TOKEN }}
+          inputs:
+            url: "https://humanitec.com/"
+            text: "platform"
+        continue-on-error: true
+
+      - name: Notify Staging test failure
+        id: stg-tests-notify
+        if: ${{ steps.stg-tests.status == 'failed' }}
+        uses: actions/humanitec/http
+        with:
+          method: POST
+          url: ${{ app.values.SLACK_WEBHOOK_URL }}
+          headers:
+            "Content-type": "application/json"
+          data: { "text":":alert: Staging tests failed after deployment of BUILD ${{ inputs.build }} - ${{ inputs.commit }}" }
+
+      - name: Notify Production approval
+        id: approval-notify
+        if: ${{ steps.stg-tests.status == 'succeeded' }}
+        uses: actions/humanitec/http
+        with:
+          method: POST
+          url: ${{ app.values.SLACK_WEBHOOK_URL }}
+          headers:
+            "Content-type": "application/json"
+          data: { "text":"Ready for approval - Production deployment of BUILD ${{ inputs.build }} - ${{ inputs.commit }}" }
+
+      - name: Wait for Production deployment approval
+        id: prd-approval
+        if: ${{ steps.stg-tests.status == 'succeeded' }}
+        uses: actions/humanitec/approve
+        with:
+          environment: production
+          message: The build ${{ inputs.build }} has been successfully tested on Staging. Promote to Production?
+
+      - name: Prepare Production deployment
+        id: prd-prep
+        if: ${{ steps.stg-tests.status == 'succeeded' }}
+        uses: actions/humanitec/clone
+        with:
+          from: staging
+          to: production
+          deployment: ${{ steps.stg-deploy.outputs.deployment }}
+
+      - name: Deploy to Production
+        id: prd-deploy
+        if: ${{ steps.stg-tests.status == 'succeeded' }}
+        uses: actions/humanitec/deploy
+        with:
+          to: production
+          deploymentset: ${{ steps.prd-prep.outputs.deploymentset }}
+          message: BUILD ${{ inputs.build }} - ${{ inputs.commit }}
+
+      - name: Run tests against Production
+        id: prd-tests
+        if: ${{ steps.prd-deploy.status == 'succeeded' }}
+        uses: actions/humanitec/github-workflow
+        with:
+          repo: Nilsty/robot-test-action
+          ref: main
+          workflow: run-robot-test.yml
+          access-token: ${{ app.values.GITHUB_TOKEN }}
+          inputs:
+            url: "https://humanitec.com/"
+            text: "bogus"
+        continue-on-error: true
+
+      - name: Notify Production test failure
+        id: prd-tests-notify
+        if: ${{ steps.prd-tests.status == 'failed' }}
+        uses: actions/humanitec/http
+        with:
+          method: POST
+          url: ${{ app.values.SLACK_WEBHOOK_URL }}
+          headers:
+            "Content-type": "application/json"
+          data: { "text":":alert: Production smoke tests failed after deployment of BUILD ${{ inputs.build }} - ${{ inputs.commit }}" }
