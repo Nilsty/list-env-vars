@@ -18,4 +18,4 @@ jobs:
           curl --location --request PATCH 'https://api.humanitec.io/orgs/${{ secrets.HUMANITEC_ORG }}/apps/list-env-vars-app/pipelines/${{ vars.HUM_PIPELINE_ID }}' \
           --header 'Authorization: Bearer ${{ secrets.HUMANITEC_TOKEN }}' \
           --header 'Content-Type: application/x-yaml' \
-          --data '$(cat humanitec.pipeline.yaml)'
+          --data @humanitec.pipeline.yaml
