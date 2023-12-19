@@ -15,8 +15,7 @@ jobs:
         name: checkout code
       - name: update Humanitec pipeline
         run: |
-          echo PIPELINE_YML=$(cat humanitec.pipeline.yaml)
           curl --location --request PATCH 'https://api.humanitec.io/orgs/${{ secrets.HUMANITEC_ORG }}/apps/list-env-vars-app/pipelines/${{ vars.HUM_PIPELINE_ID }}' \
           --header 'Authorization: Bearer ${{ secrets.HUMANITEC_TOKEN }}' \
           --header 'Content-Type: application/x-yaml' \
-          --data '${PIPELINE_YML}'
+          --data '$(cat humanitec.pipeline.yaml)'

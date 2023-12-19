@@ -160,4 +160,4 @@ jobs:
           url: ${{ app.values.SLACK_WEBHOOK_URL }}
           headers:
             "Content-type": "application/json"
-          data: { "text":":alert: Production smoke tests failed after deployment of BUILD ${{ inputs.build }} - ${{ inputs.commit }} test" }
+          data: { "text":":alert: Production smoke tests failed after deployment of BUILD ${{ inputs.build }} - ${{ inputs.commit }}" }
