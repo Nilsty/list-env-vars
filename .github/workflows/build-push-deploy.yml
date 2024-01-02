@@ -15,7 +15,7 @@ jobs:
         name: setup score
         with:
           file: score-humanitec
-          version: '0.8.0'
+          version: '0.9.1'
       - name: Build and Push to Humanitec
         uses: humanitec/build-push-to-humanitec@v1
         id: push
