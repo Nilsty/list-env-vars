@@ -64,7 +64,7 @@ jobs:
         with:
           from_env_id: development
           to_env_id: staging
-          deployment_id: ${{ steps.dev-deploy.outputs.deployment }}
+          from_deployment_id: ${{ steps.dev-deploy.outputs.deployment }}
 
       - name: Deploy to staging
         id: stg-deploy
@@ -126,7 +126,7 @@ jobs:
         with:
           from_env_id: staging
           to_env_id: production
-          deployment_id: ${{ steps.stg-deploy.outputs.deployment }}
+          from_deployment_id: ${{ steps.stg-deploy.outputs.deployment }}
 
       - name: Deploy to Production
         id: prd-deploy
