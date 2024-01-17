@@ -12,7 +12,7 @@ containers:
   list-env-vars:
     image: "" # set by pipeline
     variables:
-      TEST_ENV_VAR: my test value
+      TEST_ENV_VAR: my new test value
     livenessProbe:
       httpGet:
         path: /
