@@ -2,7 +2,7 @@ name: Promote Build
 on:
   pipeline_call:
     inputs:
-      delta:
+      delta_id:
         description: delta id from score
         type: string
         required: true
@@ -21,16 +21,16 @@ jobs:
         id: dev-prep
         uses: actions/humanitec/apply
         with:
-          to: development
-          delta: ${{ inputs.delta }}
+          env_id: development
+          delta_id: ${{ inputs.delta_id }}
 
       - name: Deploy to development
         id: dev-deploy
         uses: actions/humanitec/deploy
         with:
-          to: development
-          deploymentset: ${{ steps.dev-prep.outputs.deploymentset }}
-          message: BUILD ${{ inputs.build }} - ${{ inputs.commit }}
+          env_id: development
+          set_id: ${{ steps.dev-prep.outputs.set_id }}
+          comment: BUILD ${{ inputs.build }} - ${{ inputs.commit }}
       
       - name: Run tests against development
         id: dev-tests
@@ -40,7 +40,7 @@ jobs:
           repo: Nilsty/robot-test-action
           ref: main
           workflow: run-robot-test.yml
-          access-token: ${{ app.values.GITHUB_TOKEN }}
+          access_token: ${{ app.values.GITHUB_TOKEN }}
           inputs:
             url: "https://humanitec.com/"
             text: "Abstract"
@@ -62,18 +62,18 @@ jobs:
         if: ${{ steps.dev-tests.status == 'succeeded' }}
         uses: actions/humanitec/clone
         with:
-          from: development
-          to: staging
-          deployment: ${{ steps.dev-deploy.outputs.deployment }}
+          from_env_id: development
+          to_env_id: staging
+          deployment_id: ${{ steps.dev-deploy.outputs.deployment }}
 
       - name: Deploy to staging
         id: stg-deploy
         if: ${{ steps.dev-tests.status == 'succeeded' }}
         uses: actions/humanitec/deploy
         with:
-          to: staging
-          deploymentset: ${{ steps.stg-prep.outputs.deploymentset }}
-          message: BUILD ${{ inputs.build }} - ${{ inputs.commit }}
+          env_id: staging
+          set_id: ${{ steps.stg-prep.outputs.set_id }}
+          comment: BUILD ${{ inputs.build }} - ${{ inputs.commit }}
 
       - name: Run tests against staging
         id: stg-tests
@@ -83,7 +83,7 @@ jobs:
           repo: Nilsty/robot-test-action
           ref: main
           workflow: run-robot-test.yml
-          access-token: ${{ app.values.GITHUB_TOKEN }}
+          access_token: ${{ app.values.GITHUB_TOKEN }}
           inputs:
             url: "https://humanitec.com/"
             text: "platform"
@@ -116,26 +116,26 @@ jobs:
         if: ${{ steps.stg-tests.status == 'succeeded' }}
         uses: actions/humanitec/approve
         with:
-          environment: production
-          message: The build ${{ inputs.build }} has been successfully tested on Staging. Promote to Production?
+          env_id: production
+          comment: The build ${{ inputs.build }} has been successfully tested on Staging. Promote to Production?
 
       - name: Prepare Production deployment
         id: prd-prep
         if: ${{ steps.stg-tests.status == 'succeeded' }}
         uses: actions/humanitec/clone
         with:
-          from: staging
-          to: production
-          deployment: ${{ steps.stg-deploy.outputs.deployment }}
+          from_env_id: staging
+          to_env_id: production
+          deployment_id: ${{ steps.stg-deploy.outputs.deployment }}
 
       - name: Deploy to Production
         id: prd-deploy
         if: ${{ steps.stg-tests.status == 'succeeded' }}
         uses: actions/humanitec/deploy
         with:
-          to: production
-          deploymentset: ${{ steps.prd-prep.outputs.deploymentset }}
-          message: BUILD ${{ inputs.build }} - ${{ inputs.commit }}
+          env_id: production
+          set_id: ${{ steps.prd-prep.outputs.set_id }}
+          comment: BUILD ${{ inputs.build }} - ${{ inputs.commit }}
 
       - name: Run tests against Production
         id: prd-tests
@@ -145,7 +145,7 @@ jobs:
           repo: Nilsty/robot-test-action
           ref: main
           workflow: run-robot-test.yml
-          access-token: ${{ app.values.GITHUB_TOKEN }}
+          access_token: ${{ app.values.GITHUB_TOKEN }}
           inputs:
             url: "https://humanitec.com/"
             text: "bogus"
